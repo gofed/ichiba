@@ -1,0 +1,46 @@
+description: "Generate spec file from repository import path"
+flags:
+- long: github
+  type: boolean
+  description: "github.com repository"
+  non-empty-group: kind
+  requires:
+  - project
+  - repo
+- long: googlecode
+  type: boolean
+  description: "code.google.com repository"
+  non-empty-group: kind
+  requires:
+  - repo
+- long: bitbucket
+  type: boolean
+  description: "bitbucket.org repository"
+  non-empty-group: kind
+  requires:
+  - project
+  - repo
+- long: detect
+  type: string
+  description: "Detect repository from import path"
+  non-empty-group: kind
+- long: dir
+  short: d
+  target: directory
+  type: directory
+  description: "Generate spec file from directory"
+  direction: in
+  non-empty-group: kind
+- long: project
+  short: p
+  type: string
+  description: "Repository name, e.g. github.com/PROJECT/repository"
+- long: repo
+  short: r
+  type: string
+  description: "Repository name, e.g. github.com/project/REPO"
+- long: commit
+  short: c
+  type: string
+  description: "Commit. If not specified the latest is taken."
+

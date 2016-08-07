@@ -1,0 +1,13 @@
+- each project must provide meta signature (signature from which one can construct kubernetes job specification)
+- only the Ichiba can generate the job specification (so the job has precise format, increase security risks, etc.)
+- every project/task functionality must be inside an image (e.g. Docker image)
+- Ichiba gets a list of arguments for its command (yaml files) from which the remaining specificaiton is constructed
+
+- project provides source codes, commands, yml file(s) with flags of each supported command
+- Ichiba client parses commands arguments based on the yml file(s) and generates a signature (Docker, Kubernetes, other, ...)
+- output of some command is a set of files, all generates files must be stored generated under working place directory, content of the working directory is then subject of uploading to a publicly available place (based on the command signature)
+
+- each Ichiba task consists of commands, each command consists of
+  - image (currently Docker image)
+  - command signature (yml file(s) describing defined arguments)
+

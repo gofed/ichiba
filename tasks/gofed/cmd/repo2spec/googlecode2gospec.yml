@@ -1,0 +1,17 @@
+flags:
+- long: repo
+  short: r
+  type: string
+  description: "Repository name, code.google.com/p/REPO"
+  non-empty: True
+- long: rev
+  short: c
+  target: revision
+  type: string
+  description: "Revision"
+  non-empty: True
+- long: dir
+  short: d
+  target: directory
+  type: directory
+  description: "Generate spec file from directory"

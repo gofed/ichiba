@@ -1,0 +1,20 @@
+flags:
+- long: repo
+  short: r
+  type: string
+  description: "Repository name, bitbucket.org/project/REPO"
+  non-empty: True
+- long: project
+  short: p
+  type: string
+  description: "Repository name, bitbucket.org/PROJECT/repository"
+  non-empty: True
+- long: commit
+  short: c
+  type: string
+  description: "Commit. If not specified the latest is taken."
+- long: dir
+  short: d
+  target: directory
+  type: directory
+  description: "Generate spec file from directory"

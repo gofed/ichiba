@@ -1,0 +1,13 @@
+---
+name: Gofed tooling for Go language
+description: Set of tools for analysis and distribution of projects written in Go
+commands:
+- name: repo2spec
+  flags: ["repo2spec/repo2gospec-global.yml", "repo2spec/repo2gospec.yml"]
+- name: bitbucket2spec
+  flags: ["repo2spec/repo2gospec-global.yml", "repo2spec/bitbucket2gospec.yml"]
+- name: github2spec
+  flags: ["repo2spec/repo2gospec-global.yml", "repo2spec/github2gospec.yml"]
+- name: googlecode2spec
+  flags: ["repo2spec/repo2gospec-global.yml", "repo2spec/googlecode2gospec.yml"]
+
