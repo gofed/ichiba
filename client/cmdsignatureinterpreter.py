@@ -190,7 +190,7 @@ class cmdSignatureInterpreter(object):
 				# TODO(jchaloup): how to generate unique filenames for generated resources?
 				cmds.append("tar -czf %s.tar.gz /tmp/var/run/ichiba/%s" % (filename, flag))
 				# TODO(jchaloup): support other storage resources
-				cmds.append("scp -i /etc/storagePK %s.tar.gz ichiba@storage:/var/run/ichiba/%s/." % (filename, task_name))
+				cmds.append("scp -i /etc/storage-pk %s.tar.gz ichiba@storage:/var/run/ichiba/%s/." % (filename, task_name))
 				# TODO(jchaloup): collect container logs (meantime without logs)
 
 			preStopCommand = {
@@ -210,15 +210,15 @@ class cmdSignatureInterpreter(object):
 
 			# create volume from secret with storage PK
 			job_spec["spec"]["template"]["spec"]["volumes"] = [{
-				"name": "storagePK",
+				"name": "storage-pk",
 				"secret": {
-					"secretName": "storagePK"
+					"secretName": "storage-pk"
 				}
 			}]
 
 			job_spec["spec"]["template"]["spec"]["containers"][0]["volumeMounts"] = [{
-				"name": "storagePK",
-				"mountPath": "/etc/storagePK",
+				"name": "storage-pk",
+				"mountPath": "/etc/storage-pk",
 				"readOnly": True
 			}]
 
