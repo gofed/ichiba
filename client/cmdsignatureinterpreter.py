@@ -147,8 +147,8 @@ class cmdSignatureInterpreter(object):
 							"name": task_name,
 							"image": self._image,
 							"command": [
-								"sudo",
-								"--user=gofed",
+								"/bin/sh",
+								"-ec",
 								self._binary
 							]
 						}],
@@ -159,10 +159,12 @@ class cmdSignatureInterpreter(object):
 			}
 		}
 
-		# Add command specific flags
-		for flag in cmd_flags:
-			job_spec["spec"]["template"]["spec"]["containers"][0]["command"].append(flag)
+		# Add command
+		cmd = ["/bin/sh", "-ec"]
+		cmd.append("%s %s %s" % (self._binary, self._command, " ".join(cmd_flags)))
+		job_spec["spec"]["template"]["spec"]["containers"][0]["command"] = cmd
 
+		# Add hooks
 		if out_flags != []:
 			# add postStart script to generate anonymous paths for output host paths
 			# no matter what is inside a given directory (one or more files),
