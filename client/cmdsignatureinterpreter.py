@@ -226,7 +226,7 @@ class cmdSignatureInterpreter(object):
 		# For that reason, the container will have to clone entire ichiba repository to get a list of all supported tasks.
 		# Ichiba client will then just send the command signature.
 		# Ichiba server running inside a container will generate the specification so it can not be foisted.
-		return json.dumps(job_spec)
+		return job_spec
 
 	def jenkinsSignature(self):
 		pass

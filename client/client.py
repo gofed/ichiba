@@ -34,6 +34,7 @@ import yaml
 import sys
 from cmdsignatureinterpreter import cmdSignatureInterpreter
 import pykube
+import logging
 
 def getScriptDir(file = __file__):
 	return os.path.dirname(os.path.realpath(file))
@@ -128,7 +129,7 @@ if __name__ == "__main__":
 	# original args would be [results.task_name, results.command] + unknown
 	interpreter.interpret(unknown)
 	if results.provider == "docker":
-		print interpreter.dockerSignature()
+		print(interpreter.dockerSignature())
 	elif results.provider == "kubernetes":
 		config = {}
 		if results.hostname != "":
@@ -136,12 +137,12 @@ if __name__ == "__main__":
 		if results.servername != "":
 			config["servername"] = results.servername
 		job_spec = interpreter.kubeSignature(config)
-		print job_spec
+		print(job_spec)
 
-		self._kube_api = pykube.HTTPClient(pykube.KubeConfig.from_file(kubeconfig))
+		kube_api = pykube.HTTPClient(pykube.KubeConfig.from_file(kubeconfig))
 		try:
-			pykube.Job(self._kube_api, job_spec).create()
-			print "Job created"
-		except:
-			logging.error("Job not created.")
+			pykube.Job(kube_api, job_spec).create()
+			print("Job created")
+		except Exception as e:
+			logging.error("Job not created: %s" % s)
 
