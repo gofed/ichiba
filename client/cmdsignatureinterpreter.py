@@ -150,72 +150,72 @@ class cmdSignatureInterpreter(object):
 								"/bin/sh",
 								"-ec",
 								self._binary
-							]
+							],
+							"volumeMounts": [{
+								"name": "storage-pk",
+								"mountPath": "/etc/storage-pk",
+								"readOnly": True
+							}]
 						}],
 						# OnFailure
-						"restartPolicy": "Never"
+						"restartPolicy": "Never",
+						"volumes": [{
+						# create volume from secret with storage PK
+							"name": "storage-pk",
+							"secret": {
+								"secretName": "storage-pk"
+							}
+						}]
 					}
 				}
 			}
 		}
 
+
+		# No matter if the command itself ends with non-zero exit code
+		# Each container must terminated so a job gets completed.
+		# At the same time, logs of a pod/container needs to be uploaded with generated resources as well.
+
 		# Add command
-		main_cmd = "%s %s %s" % (self._binary, self._command, " ".join(cmd_flags))
-		postStartCommand = ":"
-		preStopCommand = ":"
+		main_cmd = "/bin/sh -c \"%s %s %s\" 2>&1 | tee build.log" % (self._binary, self._command, " ".join(cmd_flags))
+
+		pre_stop_cmds = []
+		# pk nees 0600 permissions, /etc is read-only
+		pre_stop_cmds.append("cp /etc/storage-pk/* /tmp/storage-pk")
+		pre_stop_cmds.append("chmod 0600 /tmp/storage-pk")
+
+		hostname="ichiba"
+		servername="storage"
+		if "hostname" in config:
+			hostname = config["hostname"]
+		if "servername" in config:
+			servername = config["servername"]
+
+		# Upload build.log
+		pre_stop_cmds.append("ssh -o StrictHostKeyChecking=no -i /tmp/storage-pk %s@%s 'mkdir -p /var/run/ichiba/%s'" % (hostname, servername, task_name))
+		pre_stop_cmds.append("scp -o StrictHostKeyChecking=no -i /tmp/storage-pk build.log %s@%s:/var/run/ichiba/%s/." % (hostname, servername, task_name))
+
+		post_start_cmds = []
 
 		# Add hooks
 		if out_flags != []:
 			# add postStart script to generate anonymous paths for output host paths
 			# no matter what is inside a given directory (one or more files),
 			# entire directory gets archived at the end
-			cmds = []
 			for flag in out_flags:
 				# archive all out host paths
-				cmds.append("mkdir -p /tmp/var/run/ichiba/%s" % flag)
-
-			postStartCommand = " && ".join(cmds)
-
-			hostname="ichiba"
-			servername="storage"
-			if "hostname" in config:
-				hostname = config["hostname"]
-			if "servername" in config:
-				servername = config["servername"]
+				post_start_cmds.append("mkdir -p /tmp/var/run/ichiba/%s" % flag)
 
 			# add preStop script to upload generated resources
-			cmds = []
-			# pk nees 0600 permissions, /etc is read-only
-			cmds.append("cp /etc/storage-pk/* /tmp/storage-pk")
-			cmds.append("chmod 0600 /tmp/storage-pk")
 			for flag in out_flags:
 				# archive all out host paths
 				filename = flags[flag]["target"]
 				# TODO(jchaloup): how to generate unique filenames for generated resources?
-				cmds.append("tar -czf %s.tar.gz /tmp/var/run/ichiba/%s" % (filename, flag))
+				pre_stop_cmds.append("tar -czf %s.tar.gz /tmp/var/run/ichiba/%s" % (filename, flag))
 				# TODO(jchaloup): support other storage resources
-				cmds.append("ssh -o StrictHostKeyChecking=no -i /tmp/storage-pk %s@%s 'mkdir -p /var/run/ichiba/%s'" % (hostname, servername, task_name))
-				cmds.append("scp -o StrictHostKeyChecking=no -i /tmp/storage-pk %s.tar.gz %s@%s:/var/run/ichiba/%s/." % (filename, hostname, servername, task_name))
-				# TODO(jchaloup): collect container logs (meantime without logs)
+				pre_stop_cmds.append("scp -o StrictHostKeyChecking=no -i /tmp/storage-pk %s.tar.gz %s@%s:/var/run/ichiba/%s/." % (filename, hostname, servername, task_name))
 
-			preStopCommand = " && ".join(cmds)
-
-			# create volume from secret with storage PK
-			job_spec["spec"]["template"]["spec"]["volumes"] = [{
-				"name": "storage-pk",
-				"secret": {
-					"secretName": "storage-pk"
-				}
-			}]
-
-			job_spec["spec"]["template"]["spec"]["containers"][0]["volumeMounts"] = [{
-				"name": "storage-pk",
-				"mountPath": "/etc/storage-pk",
-				"readOnly": True
-			}]
-
-
-		cmd = ["/bin/sh", "-ec", " && ".join([postStartCommand, main_cmd, preStopCommand]) ]
+		cmd = ["/bin/sh", "-ec", " && ".join(post_start_cmds + [main_cmd] + pre_stop_cmds) ]
 		job_spec["spec"]["template"]["spec"]["containers"][0]["command"] = cmd
 
 		# One must assume the generated specification is publicly available.
