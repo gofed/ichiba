@@ -178,13 +178,17 @@ class cmdSignatureInterpreter(object):
 
 			# add preStop script to upload generated resources
 			cmds = []
+			# pk nees 0600 permissions, /etc is read-only
+			cmds.append("cp /etc/storage-pk/* /tmp/storage-pk")
+			cmds.append("chmod 0600 /tmp/storage-pk")
 			for flag in out_flags:
 				# archive all out host paths
 				filename = flags[flag]["target"]
 				# TODO(jchaloup): how to generate unique filenames for generated resources?
 				cmds.append("tar -czf %s.tar.gz /tmp/var/run/ichiba/%s" % (filename, flag))
 				# TODO(jchaloup): support other storage resources
-				cmds.append("scp -i /etc/storage-pk %s.tar.gz ichiba@storage:/var/run/ichiba/%s/." % (filename, task_name))
+				cmds.append("ssh -i /tmp/storage-pk ichiba@storage 'mkdir -p /var/run/ichiba/%s'" % (filename, task_name))
+				cmds.append("scp -i /tmp/storage-pk %s.tar.gz ichiba@storage:/var/run/ichiba/%s/." % (filename, task_name))
 				# TODO(jchaloup): collect container logs (meantime without logs)
 
 			preStopCommand = " && ".join(cmds)
