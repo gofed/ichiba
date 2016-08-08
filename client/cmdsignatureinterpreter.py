@@ -160,9 +160,9 @@ class cmdSignatureInterpreter(object):
 		}
 
 		# Add command
-		cmd = ["/bin/sh", "-ec"]
-		cmd.append("%s %s %s" % (self._binary, self._command, " ".join(cmd_flags)))
-		job_spec["spec"]["template"]["spec"]["containers"][0]["command"] = cmd
+		main_cmd = "%s %s %s" % (self._binary, self._command, " ".join(cmd_flags))
+		postStartCommand = ":"
+		preStopCommand = ":"
 
 		# Add hooks
 		if out_flags != []:
@@ -174,15 +174,7 @@ class cmdSignatureInterpreter(object):
 				# archive all out host paths
 				cmds.append("mkdir -p /tmp/var/run/ichiba/%s" % flag)
 
-			postStartCommand = {
-				"exec": {
-					"command": [
-						"/bin/sh",
-						"-ec",
-						" && ".join(cmds)
-					]
-				}
-			}
+			postStartCommand = " && ".join(cmds)
 
 			# add preStop script to upload generated resources
 			cmds = []
@@ -195,20 +187,7 @@ class cmdSignatureInterpreter(object):
 				cmds.append("scp -i /etc/storage-pk %s.tar.gz ichiba@storage:/var/run/ichiba/%s/." % (filename, task_name))
 				# TODO(jchaloup): collect container logs (meantime without logs)
 
-			preStopCommand = {
-				"exec": {
-					"command": [
-						"/bin/sh",
-						"-ec",
-						" && ".join(cmds)
-					]
-				}
-			}
-
-			job_spec["spec"]["template"]["spec"]["containers"][0]["lifecycle"] = {
-				"preStop": preStopCommand,
-				"postStart": postStartCommand
-			}
+			preStopCommand = " && ".join(cmds)
 
 			# create volume from secret with storage PK
 			job_spec["spec"]["template"]["spec"]["volumes"] = [{
@@ -223,6 +202,10 @@ class cmdSignatureInterpreter(object):
 				"mountPath": "/etc/storage-pk",
 				"readOnly": True
 			}]
+
+
+		cmd = ["/bin/sh", "-ec", " && ".join([postStartCommand, main_cmd, preStopCommand]) ]
+		job_spec["spec"]["template"]["spec"]["containers"][0]["command"] = cmd
 
 		# One must assume the generated specification is publicly available.
 		# Location of the private PK is known in advance.
