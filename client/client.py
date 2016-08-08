@@ -61,6 +61,18 @@ def getOptionParser():
 		default="docker",
 		help="What provider to use: kubernetes, docker. Defaults to docker."
 	)
+	parser.add_argument(
+		"--host",
+		dest="hostname",
+		action="store",
+		default=""
+	)
+	parser.add_argument(
+		"--server",
+		dest="servername",
+		action="store",
+		default=""
+	)
 
 	subparsers = parser.add_subparsers(help='commands', dest="task_name")
 
@@ -117,6 +129,11 @@ if __name__ == "__main__":
 	if results.provider == "docker":
 		print interpreter.dockerSignature()
 	elif results.provider == "kubernetes":
-		print interpreter.kubeSignature()
+		config = {}
+		if results.hostname != "":
+			config["hostname"] = results.hostname
+		if results.servername != "":
+			config["servername"] = results.servername
+		print interpreter.kubeSignature(config)
 
 

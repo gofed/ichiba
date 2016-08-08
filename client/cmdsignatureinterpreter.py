@@ -72,7 +72,7 @@ class cmdSignatureInterpreter(object):
 
 		return options, non_default_flags, active_pos_args
 
-	def kubeSignature(self):
+	def kubeSignature(self, config = {}):
 		if self._short_eval:
 			raise SignatureException("kubernetes signature: help not supported")
 
@@ -176,6 +176,13 @@ class cmdSignatureInterpreter(object):
 
 			postStartCommand = " && ".join(cmds)
 
+			hostname="ichiba"
+			servername="storage"
+			if "hostname" in config:
+				hostname = config["hostname"]
+			if "servername" in config:
+				servername = config["servername"]
+
 			# add preStop script to upload generated resources
 			cmds = []
 			# pk nees 0600 permissions, /etc is read-only
@@ -187,8 +194,8 @@ class cmdSignatureInterpreter(object):
 				# TODO(jchaloup): how to generate unique filenames for generated resources?
 				cmds.append("tar -czf %s.tar.gz /tmp/var/run/ichiba/%s" % (filename, flag))
 				# TODO(jchaloup): support other storage resources
-				cmds.append("ssh -i /tmp/storage-pk ichiba@storage 'mkdir -p /var/run/ichiba/%s'" % (filename, task_name))
-				cmds.append("scp -i /tmp/storage-pk %s.tar.gz ichiba@storage:/var/run/ichiba/%s/." % (filename, task_name))
+				cmds.append("ssh -o StrictHostKeyChecking=no -i /tmp/storage-pk %s@%s 'mkdir -p /var/run/ichiba/%s'" % (hostname, servername, task_name))
+				cmds.append("scp -o StrictHostKeyChecking=no -i /tmp/storage-pk %s.tar.gz %s@%s:/var/run/ichiba/%s/." % (filename, hostname, servername, task_name))
 				# TODO(jchaloup): collect container logs (meantime without logs)
 
 			preStopCommand = " && ".join(cmds)
