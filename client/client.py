@@ -35,6 +35,12 @@ import sys
 from cmdsignatureparser import CmdSignatureParser
 from cmdsignatureinterpreter import cmdSignatureInterpreter
 
+def getScriptDir(file = __file__):
+	return os.path.dirname(os.path.realpath(file))
+
+# TODO(jchaloup): make the task directory configurable
+tasks_dir = "%s/../tasks" % getScriptDir(__file__)
+
 def getOptionParser():
 
 	parser = argparse.ArgumentParser()
@@ -58,8 +64,6 @@ def getOptionParser():
 
 	subparsers = parser.add_subparsers(help='commands', dest="task_name")
 
-	# TODO(jchaloup): make the task directory configurable
-	tasks_dir = "/home/jchaloup/Projects/ichiba/tasks"
 	for task in os.listdir(tasks_dir):
 		task_parser = subparsers.add_parser(task, help="Run %s command" % task)
 		main_file = "%s/%s/main.yml" % (tasks_dir, task)
@@ -86,7 +90,6 @@ def getSignatureInterpreter(results):
 
 	results, unknown = parser.parse_known_args()
 
-	tasks_dir = "/home/jchaloup/Projects/ichiba/tasks"
 	main_file = "%s/%s/main.yml" % (tasks_dir, results.task_name)
 	data = yaml.load(open(main_file, 'r'))
 	for command in data["commands"]:
