@@ -32,14 +32,15 @@ import argparse
 import os
 import yaml
 import sys
-from cmdsignatureparser import CmdSignatureParser
 from cmdsignatureinterpreter import cmdSignatureInterpreter
+import pykube
 
 def getScriptDir(file = __file__):
 	return os.path.dirname(os.path.realpath(file))
 
 # TODO(jchaloup): make the task directory configurable
 tasks_dir = "%s/../tasks" % getScriptDir(__file__)
+kubeconfig = "%s/kubeconfig" % getScriptDir(__file__)
 
 def getOptionParser():
 
@@ -134,6 +135,13 @@ if __name__ == "__main__":
 			config["hostname"] = results.hostname
 		if results.servername != "":
 			config["servername"] = results.servername
-		print interpreter.kubeSignature(config)
+		job_spec = interpreter.kubeSignature(config)
+		print job_spec
 
+		self._kube_api = pykube.HTTPClient(pykube.KubeConfig.from_file(kubeconfig))
+		try:
+			pykube.Job(self._kube_api, job_spec).create()
+			print "Job created"
+		except:
+			logging.error("Job not created.")
 
