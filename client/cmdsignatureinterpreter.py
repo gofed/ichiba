@@ -186,14 +186,17 @@ class cmdSignatureInterpreter(object):
 
 		hostname="ichiba"
 		servername="storage"
+		target="/var/www/html/pub/ichiba"
 		if "hostname" in config:
 			hostname = config["hostname"]
 		if "servername" in config:
 			servername = config["servername"]
+		if "target" in config:
+			target = config["target"]
 
 		# Upload build.log
-		pre_stop_cmds.append("ssh -o StrictHostKeyChecking=no -i /tmp/storage-pk %s@%s 'mkdir -p /var/run/ichiba/%s'" % (hostname, servername, task_name))
-		pre_stop_cmds.append("scp -o StrictHostKeyChecking=no -i /tmp/storage-pk build.log %s@%s:/var/run/ichiba/%s/." % (hostname, servername, task_name))
+		pre_stop_cmds.append("ssh -o StrictHostKeyChecking=no -i /tmp/storage-pk %s@%s 'mkdir -p %s/%s'" % (hostname, servername, target, task_name))
+		pre_stop_cmds.append("scp -o StrictHostKeyChecking=no -i /tmp/storage-pk build.log %s@%s:%s/%s/." % (hostname, servername, target, task_name))
 
 		post_start_cmds = []
 
@@ -213,7 +216,7 @@ class cmdSignatureInterpreter(object):
 				# TODO(jchaloup): how to generate unique filenames for generated resources?
 				pre_stop_cmds.append("tar -czf %s.tar.gz /tmp/var/run/ichiba/%s" % (filename, flag))
 				# TODO(jchaloup): support other storage resources
-				pre_stop_cmds.append("scp -o StrictHostKeyChecking=no -i /tmp/storage-pk %s.tar.gz %s@%s:/var/run/ichiba/%s/." % (filename, hostname, servername, task_name))
+				pre_stop_cmds.append("scp -o StrictHostKeyChecking=no -i /tmp/storage-pk %s.tar.gz %s@%s:%s/%s/." % (filename, hostname, servername, target, task_name))
 
 		cmd = ["/bin/sh", "-ec", " && ".join(post_start_cmds + [main_cmd] + pre_stop_cmds) ]
 		job_spec["spec"]["template"]["spec"]["containers"][0]["command"] = cmd

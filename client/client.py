@@ -179,6 +179,8 @@ if __name__ == "__main__":
 			config["hostname"] = results.hostname
 		if results.servername != "":
 			config["servername"] = results.servername
+		config["target"] = "/var/www/html/pub/ichiba"
+
 		job_spec = interpreter.kubeSignature(config)
 
 		kube_api = pykube.HTTPClient(pykube.KubeConfig.from_file(kubeconfig))
