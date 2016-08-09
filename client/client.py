@@ -1,4 +1,4 @@
-#!/bin/python
+#!/bin/python3
 
 # Parse command and generate corresponding signature for it.
 # Supported signatures:
@@ -35,6 +35,7 @@ import sys
 from cmdsignatureinterpreter import cmdSignatureInterpreter
 import pykube
 import logging
+import time
 
 def getScriptDir(file = __file__):
 	return os.path.dirname(os.path.realpath(file))
@@ -74,6 +75,13 @@ def getOptionParser():
 		dest="servername",
 		action="store",
 		default=""
+	)
+
+	parser.add_argument(
+		"--async",
+		dest="async",
+		action="store_true",
+		default=False
 	)
 
 	subparsers = parser.add_subparsers(help='commands', dest="task_name")
@@ -117,6 +125,41 @@ def getSignatureInterpreter(results):
 
 	raise SignatureException("Command '%s' not found" % results.command)
 
+def waitForJob(job_name, server, kube_api):
+
+	wait_for_job_to_appear = 0
+	start_time = time.time()
+	while True:
+		jobs = pykube.Job.objects(kube_api).filter(namespace="default", selector={"job-name": job_name})
+
+		print("\rWaiting... %ss" % (int(time.time() - start_time)), end="")
+		time.sleep(3)
+
+		# As there are no two jobs with the same name, len(jobs) \in {0,1}
+		if len(jobs) < 1:
+			wait_for_job_to_appear = wait_for_job_to_appear + 1
+			if wait_for_job_to_appear > 5:
+				logging.error("Job '%s' not found" % job_name)
+				exit(1)
+			continue
+
+		job_obj = None
+		for job in jobs:
+			job_obj = job
+			break
+
+		if "status" not in job_obj.obj:
+			continue
+
+		if "succeeded" not in job_obj.obj["status"]:
+			continue
+
+		if job_obj.obj["status"]["succeeded"] == 1:
+			break
+
+
+	print("\nJob at http://%s/pub/ichiba/%s" % (server, job_name))
+
 if __name__ == "__main__":
 
 	parser = getOptionParser()
@@ -137,12 +180,14 @@ if __name__ == "__main__":
 		if results.servername != "":
 			config["servername"] = results.servername
 		job_spec = interpreter.kubeSignature(config)
-		print(job_spec)
 
 		kube_api = pykube.HTTPClient(pykube.KubeConfig.from_file(kubeconfig))
 		try:
 			pykube.Job(kube_api, job_spec).create()
-			print("Job created")
+			print("Job %s created" % job_spec["metadata"]["name"])
 		except Exception as e:
 			logging.error("Job not created: %s" % s)
 
+		# Wait for the job to finish
+		if not results.async:
+			waitForJob(job_spec["metadata"]["name"], results.servername, kube_api)
