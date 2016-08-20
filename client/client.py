@@ -87,12 +87,16 @@ def getOptionParser():
 	subparsers = parser.add_subparsers(help='commands', dest="task_name")
 
 	for task in os.listdir(tasks_dir):
-		task_parser = subparsers.add_parser(task, help="Run %s command" % task)
 		main_file = "%s/%s/main.yml" % (tasks_dir, task)
-		data = yaml.load(open(main_file, 'r'))
+		try:
+			data = yaml.load(open(main_file, 'r'))
+		except FileNotFoundError:
+			continue
+
 		if "commands" not in data:
 			continue
 
+		task_parser = subparsers.add_parser(task, help="Run %s command" % task)
 		commands_parser = task_parser.add_subparsers()
 
 		for command in data["commands"]:
@@ -110,7 +114,15 @@ def getOptionParser():
 
 def getSignatureInterpreter(results):
 
-	results, unknown = parser.parse_known_args()
+	if not results.task_name:
+		# TODO(jchaloup): print global help
+		logging.error("Task missing. See help.")
+		exit(1)
+
+	if "command" not in vars(results):
+		# TODO(jchaloup): print task specific help
+		logging.error("Command missing. Run '%s -h'" % results.task_name)
+		exit(1)
 
 	main_file = "%s/%s/main.yml" % (tasks_dir, results.task_name)
 	data = yaml.load(open(main_file, 'r'))
