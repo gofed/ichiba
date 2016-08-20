@@ -1,0 +1,8 @@
+---
+name: Jenkins master client
+description: Trigger pre-deployed jobs in Jenkins master instance
+commands:
+- name: provision
+  flags: ["provision/provision.yml"]
+  description: "Provision VM or cluster of VMs for testing/production"
+
