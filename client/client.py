@@ -44,6 +44,9 @@ def getScriptDir(file = __file__):
 tasks_dir = "%s/../tasks" % getScriptDir(__file__)
 kubeconfig = "%s/kubeconfig" % getScriptDir(__file__)
 
+# TODO(jchaloup): create class merging functionality of both getOptionParser and getSignatureInterpreter
+#                 so the main.yml file is read only once
+
 def getOptionParser():
 
 	parser = argparse.ArgumentParser()
@@ -126,11 +129,20 @@ def getSignatureInterpreter(results):
 
 	main_file = "%s/%s/main.yml" % (tasks_dir, results.task_name)
 	data = yaml.load(open(main_file, 'r'))
+
+	# TODO(jchaloup): validate the yaml via JSON Schema
+	for field in ["commands", "task", "image", "binary"]:
+		if field not in data:
+			SignatureException("Missing '%s' field in task specification" % field)
+
 	for command in data["commands"]:
 		if command["name"] == results.command:
 			interpreter = cmdSignatureInterpreter(
 				map(lambda l: "%s/%s/cmd/%s" % (tasks_dir, results.task_name, l), command["flags"]),
-				command = results.command
+				command = results.command,
+				task = data["task"],
+				image = data["image"],
+				binary = data["binary"]
 			)
 
 			return interpreter

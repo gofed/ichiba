@@ -10,4 +10,7 @@ commands:
   flags: ["repo2spec/repo2gospec-global.yml", "repo2spec/github2gospec.yml"]
 - name: googlecode2spec
   flags: ["repo2spec/repo2gospec-global.yml", "repo2spec/googlecode2gospec.yml"]
-
+image: gofed/gofed:v1.0.0
+task: gofed
+# Make this entrypoint of the image?
+binary: /home/gofed/gofed/hack/gofed.sh

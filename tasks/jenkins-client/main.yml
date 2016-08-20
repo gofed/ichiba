@@ -5,4 +5,6 @@ commands:
 - name: provision
   flags: ["provision/provision.yml"]
   description: "Provision VM or cluster of VMs for testing/production"
-
+image: gofed/jenkins-client:v0.0.1
+task: jenkins-client
+binary: /usr/bin/jenkins-client

@@ -41,6 +41,8 @@ class CmdSignatureParser(object):
 					if "default" not in flag:
 						if flag["type"] == "boolean":
 							flag["default"] = False
+						elif flag["type"] == "integer":
+							flag["default"] = 0
 						else:
 							flag["default"] = ""
 
@@ -124,6 +126,13 @@ class CmdSignatureParser(object):
 
 			return False
 
+		def is_integer(number):
+			try:
+				number += 1
+			except TypeError:
+				return False
+			return True
+
 		# check required grouped flags first
 		for group in self._non_empty_flag_groups:
 			group_set = False
@@ -158,6 +167,45 @@ class CmdSignatureParser(object):
 				count = count + len(self._flags[option]["requires"])
 
 			index = index + 1
+
+		# check if flags have valid values
+		for key in self._flags:
+			flag = self._flags[key]
+			long = flag["long"]
+
+			if "one-of" in flag:
+				value = options[flag["target"]]
+				one_of = flag["one-of"]
+				if value not in one_of:
+					logging.error("Option '%s': '%s' is not one of '%s'" % (long, value, "|".join(one_of)))
+					return False
+
+			if flag["type"] == "integer":
+				try:
+					value = int(options[flag["target"]])
+				except TypeError:
+					logging.error("Option '%s': '%s' is not integer" % (long, value))
+					return False
+
+				if "min" in flag:
+					min = flag["min"]
+					if not is_integer(min):
+						logging.error("Option '%s': '%s' of min is not integer" % (long, min))
+						return False
+
+					if value < flag["min"]:
+						logging.error("Options '%s': '%s' is less than min '%s'" % (long, value, min))
+						return False
+
+				if "max" in flag:
+					max = flag["max"]
+					if not is_integer(max):
+						logging.error("Option '%s': '%s' of max is not integer" % (long, max))
+						return False
+
+					if value > flag["max"]:
+						logging.error("Options '%s': '%s' is greater than max '%s'" % (long, value, max))
+						return False
 
 		return True
 

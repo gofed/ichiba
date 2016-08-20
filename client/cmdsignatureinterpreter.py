@@ -12,12 +12,12 @@ class SignatureException(Exception):
 
 class cmdSignatureInterpreter(object):
 
-	def __init__(self, signature_files, command):
+	def __init__(self, signature_files, command, task, image, binary):
 		self._cmd_signature_parser = CmdSignatureParser(signature_files, program_name=command)
 		self._short_eval = False
-		self._task = "gofed"
-		self._image = "gofed/gofed:v1.0.0"
-		self._binary = "/home/gofed/gofed/hack/gofed.sh"
+		self._task = task
+		self._image = image
+		self._binary = binary
 		self._command = command
 
 	def interpret(self, args):
