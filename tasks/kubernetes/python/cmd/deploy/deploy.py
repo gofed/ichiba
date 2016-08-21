@@ -56,21 +56,30 @@ def installAnsible(source_type, pr = 0):
 	logging.error("source type '%s' not recognized" % source_type)
 	exit(1)
 
-def runAnsible(inventory_type, resource_file = ""):
+def runAnsible(inventory_type, resource_file = "", private_key = ""):
+
+	envs = []
 
 	if inventory_type == "localhost":
-		cmd = "INVENTORY=%s ./deploy-cluster.sh" % os.path.abspath("inventory/localhost.ini")
+		envs.append({"name": "INVENTORY", "value": os.path.abspath("inventory/localhost.ini")})
 	elif inventory_type in ["from-file", "from-string"]:
 		# copy dynamic inventory script into inventory directory (so it is at the same directory as group_vars)
 		# TODO(jchaloup): remove the copy once the dynamic inventory gets merged
 		shutil.copy(DYNAMIC_INVENTORY_FILE, "inventory/dynamic_inventory.py")
 		dynamic_inventory_file_abs = os.path.abspath("inventory/dynamic_inventory.py")
 
-		cmd = "RESOURCE_FILE=%s INVENTORY=%s ./deploy-cluster.sh" % (resource_file, dynamic_inventory_file_abs)
+		envs.append({"name": "RESOURCE_FILE", "value": resource_file})
+		envs.append({"name": "INVENTORY", "value": dynamic_inventory_file_abs})
 	else:
 		logging.error("inventory type '%s' not supported" % inventory_type)
 		exit(1)
 
+	if private_key != "":
+		envs.append({"name": "ANSIBLE_PRIVATE_KEY_FILE", "value": os.path.abspath(private_key)})
+
+	envs.append({"name": "ANSIBLE_HOST_KEY_CHECKING", "value": "False"})
+
+	cmd = "%s ./deploy-cluster.sh" % " ".join(map(lambda l: "%s=%s" % (l["name"], l["value"]), envs))
 	os.chdir("scripts")
 
 	print "\nRunning ansible...\n"
@@ -119,7 +128,7 @@ if __name__ == "__main__":
 	os.chdir(ansible_location)
 
 	# run the playbook
-	rc = runAnsible(inventory_type, resource_file)
+	rc = runAnsible(inventory_type, resource_file, options.privatekey)
 
 	if inventory_type == "from-string":
 		os.unlink(temp.name)

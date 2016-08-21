@@ -23,3 +23,6 @@ flags:
   type: boolean
   description: "Inventory built from localhost"
   non-empty-group: inventory
+- long: private-key
+  type: file
+  description: "Cluster private key"
