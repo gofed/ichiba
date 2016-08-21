@@ -7,4 +7,4 @@ commands:
   description: "Provision VM or cluster of VMs for testing/production"
 image: gofed/jenkins-client:v0.0.1
 task: jenkins-client
-binary: /usr/bin/jenkins-client
+binary: /home/jenkins-client/jenkins-client.py
