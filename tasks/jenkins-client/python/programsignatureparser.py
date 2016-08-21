@@ -97,6 +97,6 @@ class ProgramSignatureParser(object):
 		elif entry_point.endswith(".sh"):
 			interpret = "bash"
 
-		# construct signature
-		return "%s %s %s" % (interpret, entry_point, " ".join(args))
+		# construct signature, print back args repr and do not interpret
+		return "%s %s %s" % (interpret, entry_point, " ".join(map(lambda l: repr(l), args)))
 
