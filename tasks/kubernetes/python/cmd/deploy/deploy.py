@@ -28,8 +28,8 @@ def installAnsible(source_type, pr = 0):
 		if rc != 0:
 			exit(rc)
 	
-		os.chdir("contrib")
 		if source_type == "PR":
+			os.chdir("contrib")
 			print "\nMergin master branch with PR '%s'\n" % pr
 			new_branch_name = "BRANCHNAME-%s" % uuid.uuid4()
 			if call("git fetch origin pull/%s/head:%s" % (pr, new_branch_name), shell=True) != 0:
@@ -41,30 +41,38 @@ def installAnsible(source_type, pr = 0):
 			if call("git merge master --no-edit", shell=True) != 0:
 				logging.error("Unable to merge PR number '%s' with master" % pr)
 				exit(1)
+			os.chdir("..")
 
-	elif source_type == "distribution-rpm":
-		raise NotImplementedError
-		# run yum/dnf install kubernetes-ansible -y
-	else:
-		logging.error("source type '%s' not recognized" % source_type)
-		exit(1)
+		return "%s/contrib/ansible" % os.getcwd()
+
+	if source_type == "distribution-rpm":
+		# kubernetes-ansible installed?
+		if call("rpm -q kubernetes-ansible", shell=True) > 0:
+			logging.error("kubernetes-ansible not installed")
+			exit(1)
+
+		return "/usr/share/kubernetes-ansible/"
+
+	logging.error("source type '%s' not recognized" % source_type)
+	exit(1)
 
 def runAnsible(inventory_type, resource_file = ""):
 
 	if inventory_type == "localhost":
-		cmd = "INVENTORY=%s ./deploy-cluster.sh" % os.path.abspath("ansible/inventory/localhost.ini")
+		cmd = "INVENTORY=%s ./deploy-cluster.sh" % os.path.abspath("inventory/localhost.ini")
 	elif inventory_type in ["from-file", "from-string"]:
 		# copy dynamic inventory script into inventory directory (so it is at the same directory as group_vars)
 		# TODO(jchaloup): remove the copy once the dynamic inventory gets merged
-		shutil.copy(DYNAMIC_INVENTORY_FILE, "ansible/inventory/dynamic_inventory.py")
-		dynamic_inventory_file_abs = os.path.abspath("ansible/inventory/dynamic_inventory.py")
+		shutil.copy(DYNAMIC_INVENTORY_FILE, "inventory/dynamic_inventory.py")
+		dynamic_inventory_file_abs = os.path.abspath("inventory/dynamic_inventory.py")
 
 		cmd = "RESOURCE_FILE=%s INVENTORY=%s ./deploy-cluster.sh" % (resource_file, dynamic_inventory_file_abs)
 	else:
 		logging.error("inventory type '%s' not supported" % inventory_type)
 		exit(1)
 
-	os.chdir("ansible/scripts")
+	os.chdir("scripts")
+
 	print "\nRunning ansible...\n"
 	return call(cmd, shell=True)
 
@@ -107,9 +115,8 @@ if __name__ == "__main__":
 			resource_file = temp.name
 
 	# from rpm of via git clone
-	# TODO(jchaloup): install ansible should return ansible location
-	#                 to which is cd'ed here, not in the function itself
-	installAnsible(source_type, pr)
+	ansible_location = installAnsible(source_type, pr)
+	os.chdir(ansible_location)
 
 	# run the playbook
 	rc = runAnsible(inventory_type, resource_file)
