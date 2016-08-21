@@ -76,9 +76,10 @@ class cmdSignatureInterpreter(object):
 		if self._short_eval:
 			raise SignatureException("kubernetes signature: help not supported")
 
-		# get a list of arguments
 		flags = self._cmd_signature_parser.flags()
 		options = vars(self._cmd_signature_parser.options())
+
+		# get a list of arguments
 		non_default_flags = []
 		for flag in flags:
 			if options[flags[flag]["target"]] != flags[flag]["default"]:
@@ -266,6 +267,11 @@ class cmdSignatureInterpreter(object):
 				path = options[flags[flag]["target"]]
 				if path != "":
 					host_paths.append(path)
+			if self._cmd_signature_parser.isFSFile(flags[flag]):
+				path = options[flags[flag]["target"]]
+				if path != "":
+					path = os.path.abspath(path)
+					host_paths.append(os.path.dirname(path))
 
 		for arg in active_pos_args:
 			if self._cmd_signature_parser.isFSDir(arg):

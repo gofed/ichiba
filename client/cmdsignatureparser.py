@@ -224,6 +224,9 @@ class CmdSignatureParser(object):
 	def isFSDir(self, flag):
 		return flag["type"] in ["directory"]
 
+	def isFSFile(self, flag):
+		return flag["type"] in ["file"]
+
 	def FSDirs(self):
 		flags = {}
 		for flag in self._flags:
