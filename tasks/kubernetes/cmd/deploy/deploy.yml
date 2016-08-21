@@ -1,0 +1,25 @@
+flags:
+- long: source-type-upstream
+  type: boolean
+  description: "Clone ansible from upstream master"
+  non-empty-group: source
+- long: source-type-pr
+  type: integer
+  description: "Clone ansible from PR merged with upstream master"
+  non-empty-group: source
+- long: source-type-rpm
+  type: boolean
+  description: "Install ansible from distribution rpm"
+  non-empty-group: source
+- long: resource-from-string
+  type: string
+  description: "Cluster resources specified by string"
+  non-empty-group: inventory
+- long: resource-from-file
+  type: file
+  description: "Cluster resource specified by file"
+  non-empty-group: inventory
+- long: local-inventory
+  type: boolean
+  description: "Inventory built from localhost"
+  non-empty-group: inventory

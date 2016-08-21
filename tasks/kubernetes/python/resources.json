@@ -1,0 +1,41 @@
+{
+    "resources": [
+        {
+            "ip": "10.8.168.33", 
+            "private_ip": "172.16.69.171", 
+            "name": "rhel-kubernetes-github-7.2-node-3s4to2-r1-1", 
+            "metadata": {
+                "ansible_ssh_user": "root", 
+                "ansible_sudo": false, 
+                "ansible-group": [
+                    "nodes"
+                ]
+            }
+        }, 
+        {
+            "ip": "10.8.168.34", 
+            "private_ip": "172.16.69.172", 
+            "name": "rhel-kubernetes-github-7.2-node-3s4to2-r1-2", 
+            "metadata": {
+                "ansible_ssh_user": "root", 
+                "ansible_sudo": false, 
+                "ansible-group": [
+                    "nodes"
+                ]
+            }
+        }, 
+        {
+            "ip": "10.8.168.35", 
+            "private_ip": "172.16.69.173", 
+            "name": "rhel-kubernetes-github-7.2-master-3s4to2-r2", 
+            "metadata": {
+                "ansible_ssh_user": "root", 
+                "ansible_sudo": false, 
+                "ansible-group": [
+                    "masters", 
+                    "etcd"
+                ]
+            }
+        }
+    ]
+}
