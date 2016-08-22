@@ -26,3 +26,6 @@ flags:
 - long: private-key
   type: file
   description: "Cluster private key"
+- long: extra-vars
+  type: string
+  description: "Extra ansible playbook arguments"
