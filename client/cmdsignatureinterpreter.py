@@ -103,7 +103,11 @@ class cmdSignatureInterpreter(object):
 				if type == "boolean":
 					cmd_flags.append("--%s" % flags[flag]["long"])
 				else:
-					cmd_flags.append("--%s %s" % (flags[flag]["long"], options[flags[flag]["target"]]))
+					value = options[flags[flag]["target"]]
+					# tranform all relative paths into absolute
+					if self._cmd_signature_parser.isFSFile(flags[flag]) or self._cmd_signature_parser.isFSDir(flags[flag]):
+						value = os.path.abspath(value)
+					cmd_flags.append("--%s %s" % (flags[flag]["long"], repr(value)))
 
 				continue
 
@@ -298,7 +302,7 @@ class cmdSignatureInterpreter(object):
 				# tranform all relative paths into absolute
 				if self._cmd_signature_parser.isFSFile(flags[flag]) or self._cmd_signature_parser.isFSDir(flags[flag]):
 					value = os.path.abspath(value)
-				cmd_flags.append("--%s %s" % (flags[flag]["long"], value))
+				cmd_flags.append("--%s %s" % (flags[flag]["long"], repr(value)))
 
 		cmd_flags_str = " ".join(cmd_flags)
 
