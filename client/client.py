@@ -36,6 +36,7 @@ from cmdsignatureinterpreter import cmdSignatureInterpreter
 import pykube
 import logging
 import time
+from subprocess import call
 
 def getScriptDir(file = __file__):
 	return os.path.dirname(os.path.realpath(file))
@@ -83,6 +84,13 @@ def getOptionParser():
 	parser.add_argument(
 		"--async",
 		dest="async",
+		action="store_true",
+		default=False
+	)
+
+	parser.add_argument(
+		"--dry",
+		dest="dry",
 		action="store_true",
 		default=False
 	)
@@ -196,7 +204,12 @@ if __name__ == "__main__":
 	# original args would be [results.task_name, results.command] + unknown
 	interpreter.interpret(unknown)
 	if results.provider == "docker":
-		print(interpreter.dockerSignature())
+		docker_cmd = interpreter.dockerSignature()
+		if results.dry:
+			print(docker_cmd)
+			exit(0)
+		else:
+			exit(call(docker_cmd, shell=True))
 	elif results.provider == "kubernetes":
 		config = {}
 		if results.hostname != "":
@@ -207,13 +220,20 @@ if __name__ == "__main__":
 
 		job_spec = interpreter.kubeSignature(config)
 
+		if results.dry:
+			print(job_spec)
+			exit(0)
+
 		kube_api = pykube.HTTPClient(pykube.KubeConfig.from_file(kubeconfig))
 		try:
 			pykube.Job(kube_api, job_spec).create()
 			print("Job %s created" % job_spec["metadata"]["name"])
 		except Exception as e:
 			logging.error("Job not created: %s" % s)
+			exit(1)
 
 		# Wait for the job to finish
 		if not results.async:
 			waitForJob(job_spec["metadata"]["name"], results.servername, kube_api)
+
+		exit(0)
