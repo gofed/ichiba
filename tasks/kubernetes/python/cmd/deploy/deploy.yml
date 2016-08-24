@@ -29,3 +29,18 @@ flags:
 - long: extra-vars
   type: string
   description: "Extra ansible playbook arguments"
+- long: deploy
+  type: string
+  default: "cluster"
+  description: "Deployment script to run"
+  one-of: ["cluster", "etcd", "docker", "master", "node"]
+- long: restart
+  type: string
+  default: "cluster"
+  description: "Restart script to run"
+  one-of: ["cluster", "etcd", "docker", "master", "node"]
+- long: update
+  type: string
+  default: "cluster"
+  description: "Update script to run"
+  one-of: ["cluster", "etcd", "docker", "master", "node"]

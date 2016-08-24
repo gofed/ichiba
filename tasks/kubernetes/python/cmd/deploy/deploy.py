@@ -56,7 +56,7 @@ def installAnsible(source_type, pr = 0):
 	logging.error("source type '%s' not recognized" % source_type)
 	exit(1)
 
-def runAnsible(inventory_type, resource_file = "", private_key = "", extravars = ""):
+def runAnsible(inventory_type, resource_file = "", private_key = "", extravars = "", script = "deploy-cluster.sh"):
 
 	envs = []
 
@@ -79,7 +79,7 @@ def runAnsible(inventory_type, resource_file = "", private_key = "", extravars =
 
 	envs.append({"name": "ANSIBLE_HOST_KEY_CHECKING", "value": "False"})
 
-	cmd = "%s ./deploy-cluster.sh" % " ".join(map(lambda l: "%s=%s" % (l["name"], l["value"]), envs))
+	cmd = "%s ./%s" % (" ".join(map(lambda l: "%s=%s" % (l["name"], l["value"]), envs)), script)
 	if extravars != "":
 		cmd = "%s --extra-vars %s" % (cmd, repr(extravars))
 
@@ -126,12 +126,20 @@ if __name__ == "__main__":
 			temp.flush()
 			resource_file = temp.name
 
+	script = "deploy-cluster.sh"
+	if options.deploy != "":
+		script = "deploy-%s.sh" % options.deploy
+	elif options.restart != "":
+		script = "restart-%s.sh" % options.deploy
+	elif options.update != "":
+		script = "update-%s.sh" % options.deploy
+
 	# from rpm of via git clone
 	ansible_location = installAnsible(source_type, pr)
 	os.chdir(ansible_location)
 
 	# run the playbook
-	rc = runAnsible(inventory_type, resource_file, options.privatekey, options.extravars)
+	rc = runAnsible(inventory_type, resource_file, options.privatekey, options.extravars, script)
 
 	if inventory_type == "from-string":
 		os.unlink(temp.name)
