@@ -5,7 +5,7 @@ LABEL Name="kubernetes" \
       Version="v0.0.1"
 
 # install deps
-RUN dnf install -y python-pip PyYAML python-requests git ansible python-netaddr kubernetes-ansible && dnf clean all
+RUN dnf install -y python-pip PyYAML python-requests git ansible python-netaddr kubernetes-ansible fedora-packager wget && dnf clean all
 
 # configure git
 RUN git config --global user.email "ichiba@gofed.com" && git config --global user.name "Gofed Ichiba"

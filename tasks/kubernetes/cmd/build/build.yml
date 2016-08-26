@@ -1,0 +1,12 @@
+flags:
+- long: commit
+  short: c
+  type: string
+  description: "github.com/kubernetes/kubernetes upstream commit"
+- long: os
+  type: string
+  description: "target os"
+  one-of: ["Fedora", "RHEL"]
+- long: build-target
+  type: string
+  description: "Build target"

@@ -5,6 +5,9 @@ commands:
 - name: deploy
   flags: ["deploy/deploy.yml"]
   description: "Deploy kubernetes via ansible"
+- name: build
+  flags: ["build/build.yml"]
+  description: "Build kubernetes"
 image: gofed/kubernetes:v0.0.1
 task: kubernetes
 binary: /home/kubernetes/kubernetes.py
