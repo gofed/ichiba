@@ -3,6 +3,7 @@ flags:
   short: c
   type: string
   description: "github.com/kubernetes/kubernetes upstream commit"
+  non-empty: True
 - long: os
   type: string
   description: "target os"
@@ -10,3 +11,4 @@ flags:
 - long: build-target
   type: string
   description: "Build target"
+  non-empty: True
