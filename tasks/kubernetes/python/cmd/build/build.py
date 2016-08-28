@@ -93,6 +93,8 @@ def run(commit, target_os = "Fedora", build_target = "rawhide"):
 		# get commit info
 		vars = getTemplateVars(git_describe, commit)
 
+		# make sure the target directory exists
+		call("mkdir -p ~/rpmbuild/SOURCES", shell=True)
 		# generate tarball
 		cmd = "git archive --prefix=kubernetes-%s/ --format tar %s | gzip -9 > ~/rpmbuild/SOURCES/kubernetes-%s.tar.gz" % (vars["commit"], vars["commit"], vars["commit"][:7])
 		if call(cmd, shell=True):
