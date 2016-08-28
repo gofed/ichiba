@@ -37,6 +37,7 @@ import pykube
 import logging
 import time
 from subprocess import call
+import configparser
 
 def getScriptDir(file = __file__):
 	return os.path.dirname(os.path.realpath(file))
@@ -44,6 +45,8 @@ def getScriptDir(file = __file__):
 # TODO(jchaloup): make the task directory configurable
 tasks_dir = "%s/../tasks" % getScriptDir(__file__)
 kubeconfig = "%s/kubeconfig" % getScriptDir(__file__)
+
+client_config = "%s/client.conf" % getScriptDir(__file__)
 
 # TODO(jchaloup): create class merging functionality of both getOptionParser and getSignatureInterpreter
 #                 so the main.yml file is read only once
@@ -91,6 +94,13 @@ def getOptionParser():
 	parser.add_argument(
 		"--dry",
 		dest="dry",
+		action="store_true",
+		default=False
+	)
+
+	parser.add_argument(
+		"--keep-default-flags",
+		dest="keepdefaultflags",
 		action="store_true",
 		default=False
 	)
@@ -150,7 +160,8 @@ def getSignatureInterpreter(results):
 				command = results.command,
 				task = data["task"],
 				image = data["image"],
-				binary = data["binary"]
+				binary = data["binary"],
+				keep_default_flags = results.keepdefaultflags
 			)
 
 			return interpreter
@@ -201,8 +212,19 @@ if __name__ == "__main__":
 		interpreter.printHelp()
 		exit(0)
 
+	# get flag overrides
+	override_section = "task:%s:%s" % (results.task_name, results.command)
+	overrides = {}
+
+	config = configparser.ConfigParser()
+	config.read(client_config)
+
+	if override_section in config.sections():
+		for option in config.options(override_section):
+			overrides[ option ] = config.get(override_section, option)
+
 	# original args would be [results.task_name, results.command] + unknown
-	interpreter.interpret(unknown)
+	interpreter.interpret(unknown, overrides)
 	if results.provider == "docker":
 		docker_cmd = interpreter.dockerSignature()
 		if results.dry:

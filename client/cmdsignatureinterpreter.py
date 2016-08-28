@@ -12,20 +12,21 @@ class SignatureException(Exception):
 
 class cmdSignatureInterpreter(object):
 
-	def __init__(self, signature_files, command, task, image, binary):
+	def __init__(self, signature_files, command, task, image, binary, keep_default_flags=False):
 		self._cmd_signature_parser = CmdSignatureParser(signature_files, program_name=command)
 		self._short_eval = False
 		self._task = task
 		self._image = image
 		self._binary = binary
 		self._command = command
+		self._keep_default_flags = keep_default_flags
 
-	def interpret(self, args):
+	def interpret(self, args, overrides = {}):
 		if "-h" in args or "--help" in args:
 			self._short_eval = True
 			return self
 
-		self._cmd_signature_parser.generate().parse(args)
+		self._cmd_signature_parser.generate(overrides).parse(args)
 		if not self._cmd_signature_parser.check():
 			exit(1)
 
@@ -316,10 +317,15 @@ class cmdSignatureInterpreter(object):
 
 		flags = self._cmd_signature_parser.flags()
 		options = vars(self._cmd_signature_parser.options())
+
 		non_default_flags = []
-		for flag in flags:
-			if options[flags[flag]["target"]] != flags[flag]["default"]:
+		if self._keep_default_flags:
+			for flag in flags:
 				non_default_flags.append(flag)
+		else:
+			for flag in flags:
+				if options[flags[flag]["target"]] != flags[flag]["default"]:
+					non_default_flags.append(flag)
 
 		# are there any unspecified flags with default paths?
 		empty_path_flags = (set(self._cmd_signature_parser.FSDirs().keys()) - set(non_default_flags))

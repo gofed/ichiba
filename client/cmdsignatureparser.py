@@ -22,7 +22,7 @@ class CmdSignatureParser(object):
 		self._non_empty_flags = []
 		self._non_empty_flag_groups = {}
 
-	def generate(self):
+	def generate(self, overrides = {}):
 
 		def long2target(long):
 			return re.sub(r'[-_]', '', long)
@@ -45,6 +45,10 @@ class CmdSignatureParser(object):
 							flag["default"] = 0
 						else:
 							flag["default"] = ""
+
+					# if provided, override the default value
+					if flag["long"] in overrides:
+						flag["default"] = overrides[flag["long"]]
 
 					self._flags[flag["target"]] = flag
 
