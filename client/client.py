@@ -98,13 +98,6 @@ def getOptionParser():
 		default=False
 	)
 
-	parser.add_argument(
-		"--keep-default-flags",
-		dest="keepdefaultflags",
-		action="store_true",
-		default=False
-	)
-
 	subparsers = parser.add_subparsers(help='commands', dest="task_name")
 
 	for task in os.listdir(tasks_dir):
@@ -161,7 +154,7 @@ def getSignatureInterpreter(results):
 				task = data["task"],
 				image = data["image"],
 				binary = data["binary"],
-				keep_default_flags = results.keepdefaultflags
+				keep_default_flags = True
 			)
 
 			return interpreter
