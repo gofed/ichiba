@@ -76,7 +76,7 @@ AtomicTask("""
   command: provision
   args:
     - "--os Fedora"
-    - "flavor m1.small"
+    - "--flavor m1.small"
     - "--size 3"
 """).run()
 
@@ -87,6 +87,6 @@ AtomicTask("""
   command: deploy
   args:
     - "--source-type-upstream"
-    - "--resources-from-file resources.json"
+    - "--resource-from-file resources.json"
     - "--extra-vars 'flannel_subnet=10.253.0.0 flannel_prefix=16 kube_master_api_port=6443 kube_cert_ip=_use_aws_external_ip_ open_cadvisor_port=true kube_source_type=distribution-rpm kube_rpm_url_base=%s kube_rpm_url_sufix=%s'"
 """ % (url_base, url_sufix)).run()

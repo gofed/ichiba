@@ -183,7 +183,7 @@ def parse_task_info(info):
 		
 			parts = line.split(": ")
 			if parts[0][0] != " ":
-				key = parts[0]
+				key = parts[0].replace(":", "")
 		
 			if key not in archs:
 				if len(parts) < 2:

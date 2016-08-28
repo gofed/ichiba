@@ -20,6 +20,7 @@ class cmdSignatureInterpreter(object):
 		self._binary = binary
 		self._command = command
 		self._keep_default_flags = keep_default_flags
+		self._overrides = {}
 
 	def interpret(self, args, overrides = {}):
 		if "-h" in args or "--help" in args:
@@ -30,6 +31,7 @@ class cmdSignatureInterpreter(object):
 		if not self._cmd_signature_parser.check():
 			exit(1)
 
+		self._overrides = overrides
 		return self
 
 	def printHelp(self):
@@ -80,7 +82,6 @@ class cmdSignatureInterpreter(object):
 		flags = self._cmd_signature_parser.flags()
 		options = vars(self._cmd_signature_parser.options())
 
-		# get a list of arguments
 		non_default_flags = []
 		for flag in flags:
 			if options[flags[flag]["target"]] != flags[flag]["default"]:
@@ -96,6 +97,17 @@ class cmdSignatureInterpreter(object):
 			non_default_flags.append(flag)
 			options[flag] = u_options[flag]
 
+		# override flags
+		for flag in flags:
+			lflag = flags[flag]["long"]
+			target = flags[flag]["target"]
+			if lflag in self._overrides:
+				options[target] = self._overrides[lflag]
+				if self._cmd_signature_parser.isFSResource(flags[flag]):
+					options[target] = os.path.abspath(options[target])
+				if flag not in non_default_flags:
+					non_default_flags.append(flag)
+
 		cmd_flags = []
 		out_flags = []
 		for flag in non_default_flags:
@@ -106,7 +118,7 @@ class cmdSignatureInterpreter(object):
 				else:
 					value = options[flags[flag]["target"]]
 					# tranform all relative paths into absolute
-					if self._cmd_signature_parser.isFSFile(flags[flag]) or self._cmd_signature_parser.isFSDir(flags[flag]):
+					if self._cmd_signature_parser.isFSResource(flags[flag]):
 						value = os.path.abspath(value)
 					cmd_flags.append("--%s %s" % (flags[flag]["long"], repr(value)))
 
@@ -249,6 +261,7 @@ class cmdSignatureInterpreter(object):
 
 		flags = self._cmd_signature_parser.flags()
 		options = vars(self._cmd_signature_parser.options())
+
 		non_default_flags = []
 		for flag in flags:
 			if options[flags[flag]["target"]] != flags[flag]["default"]:
@@ -263,6 +276,17 @@ class cmdSignatureInterpreter(object):
 		for flag in u_non_default_flags:
 			non_default_flags.append(flag)
 			options[flag] = u_options[flag]
+
+		# override flags
+		for flag in flags:
+			lflag = flags[flag]["long"]
+			target = flags[flag]["target"]
+			if lflag in self._overrides:
+				options[target] = self._overrides[lflag]
+				if self._cmd_signature_parser.isFSResource(flags[flag]):
+					options[target] = os.path.abspath(options[target])
+				if flag not in non_default_flags:
+					non_default_flags.append(flag)
 
 		# remap paths
 		# each path is to be mapped to itself inside a container
@@ -301,7 +325,7 @@ class cmdSignatureInterpreter(object):
 			else:
 				value = options[flags[flag]["target"]]
 				# tranform all relative paths into absolute
-				if self._cmd_signature_parser.isFSFile(flags[flag]) or self._cmd_signature_parser.isFSDir(flags[flag]):
+				if self._cmd_signature_parser.isFSResource(flags[flag]):
 					value = os.path.abspath(value)
 				cmd_flags.append("--%s %s" % (flags[flag]["long"], repr(value)))
 
@@ -319,13 +343,9 @@ class cmdSignatureInterpreter(object):
 		options = vars(self._cmd_signature_parser.options())
 
 		non_default_flags = []
-		if self._keep_default_flags:
-			for flag in flags:
+		for flag in flags:
+			if options[flags[flag]["target"]] != flags[flag]["default"]:
 				non_default_flags.append(flag)
-		else:
-			for flag in flags:
-				if options[flags[flag]["target"]] != flags[flag]["default"]:
-					non_default_flags.append(flag)
 
 		# are there any unspecified flags with default paths?
 		empty_path_flags = (set(self._cmd_signature_parser.FSDirs().keys()) - set(non_default_flags))
@@ -337,6 +357,17 @@ class cmdSignatureInterpreter(object):
 			non_default_flags.append(flag)
 			options[flag] = u_options[flag]
 
+		# override flags
+		for flag in flags:
+			lflag = flags[flag]["long"]
+			target = flags[flag]["target"]
+			if lflag in self._overrides:
+				options[target] = self._overrides[lflag]
+				if self._cmd_signature_parser.isFSResource(flags[flag]):
+					options[target] = os.path.abspath(options[target])
+				if flag not in non_default_flags:
+					non_default_flags.append(flag)
+
 		cmd_flags = []
 		for flag in non_default_flags:
 			type = flags[flag]["type"]
@@ -345,7 +376,7 @@ class cmdSignatureInterpreter(object):
 			else:
 				value = options[flags[flag]["target"]]
 				# tranform all relative paths into absolute
-				if self._cmd_signature_parser.isFSFile(flags[flag]) or self._cmd_signature_parser.isFSDir(flags[flag]):
+				if self._cmd_signature_parser.isFSResource(flags[flag]):
 					value = os.path.abspath(value)
 				cmd_flags.append("--%s %s" % (flags[flag]["long"], repr(value)))
 
