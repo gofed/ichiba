@@ -310,5 +310,44 @@ class cmdSignatureInterpreter(object):
 
 		return "docker run %s -t %s %s %s %s %s" % (mounts_str, self._image, self._binary, self._command, cmd_flags_str, active_pos_args_str)
 
+	def hostSignature(self):
+		if self._short_eval:
+			return "%s %s -h" % (self._binary, self._command)
+
+		flags = self._cmd_signature_parser.flags()
+		options = vars(self._cmd_signature_parser.options())
+		non_default_flags = []
+		for flag in flags:
+			if options[flags[flag]["target"]] != flags[flag]["default"]:
+				non_default_flags.append(flag)
+
+		# are there any unspecified flags with default paths?
+		empty_path_flags = (set(self._cmd_signature_parser.FSDirs().keys()) - set(non_default_flags))
+
+		# set command specific flags
+		u_options, u_non_default_flags, active_pos_args = self.setDefaultPaths(empty_path_flags, self._cmd_signature_parser.full_args())
+
+		for flag in u_non_default_flags:
+			non_default_flags.append(flag)
+			options[flag] = u_options[flag]
+
+		cmd_flags = []
+		for flag in non_default_flags:
+			type = flags[flag]["type"]
+			if type == "boolean":
+				cmd_flags.append("--%s" % flags[flag]["long"])
+			else:
+				value = options[flags[flag]["target"]]
+				# tranform all relative paths into absolute
+				if self._cmd_signature_parser.isFSFile(flags[flag]) or self._cmd_signature_parser.isFSDir(flags[flag]):
+					value = os.path.abspath(value)
+				cmd_flags.append("--%s %s" % (flags[flag]["long"], repr(value)))
+
+		cmd_flags_str = " ".join(cmd_flags)
+
+		active_pos_args_str = " ".join(map(lambda l: l["value"], active_pos_args))
+
+		return "%s %s %s %s" % (self._binary, self._command, cmd_flags_str, active_pos_args_str)
+
 def getScriptDir(file = __file__):
 	return os.path.dirname(os.path.realpath(file))

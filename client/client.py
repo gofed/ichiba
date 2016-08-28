@@ -64,7 +64,7 @@ def getOptionParser():
 		"--provider",
 		dest="provider",
 		action="store",
-		choices=["docker", "kubernetes"],
+		choices=["docker", "kubernetes", "host"],
 		default="docker",
 		help="What provider to use: kubernetes, docker. Defaults to docker."
 	)
@@ -237,3 +237,10 @@ if __name__ == "__main__":
 			waitForJob(job_spec["metadata"]["name"], results.servername, kube_api)
 
 		exit(0)
+	elif results.provider == "host":
+		host_cmd = interpreter.hostSignature()
+		if results.dry:
+			print(host_cmd)
+			exit(0)
+		else:
+			exit(call(host_cmd, shell=True))
