@@ -32,7 +32,7 @@ import argparse
 import os
 import yaml
 import sys
-from cmdsignatureinterpreter import cmdSignatureInterpreter
+from cmdsignature.interpreter import CmdSignatureInterpreter
 import pykube
 import logging
 import time
@@ -148,7 +148,7 @@ def getSignatureInterpreter(results):
 
 	for command in data["commands"]:
 		if command["name"] == results.command:
-			interpreter = cmdSignatureInterpreter(
+			interpreter = CmdSignatureInterpreter(
 				map(lambda l: "%s/%s/cmd/%s" % (tasks_dir, results.task_name, l), command["flags"]),
 				command = results.command,
 				task = data["task"],

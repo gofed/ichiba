@@ -9,7 +9,7 @@ import os
 from subprocess import PIPE, Popen, call
 import json
 
-from cmdsignatureparser import CmdSignatureParser
+from cmdsignature.parser import CmdSignatureParser
 
 def renderTemplate(searchpath, template_file, template_vars):
 

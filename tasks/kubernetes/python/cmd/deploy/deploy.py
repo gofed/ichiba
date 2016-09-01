@@ -15,7 +15,7 @@ import tempfile
 import json
 import shutil
 
-from cmdsignatureparser import CmdSignatureParser
+from cmdsignature.parser import CmdSignatureParser
 
 def getScriptDir(file = __file__):
 	return os.path.dirname(os.path.realpath(file))

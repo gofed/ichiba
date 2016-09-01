@@ -4,7 +4,7 @@ import logging
 import optparse
 import os
 
-from cmdsignatureparser import CmdSignatureParser
+from cmdsignature.parser import CmdSignatureParser
 from jenkins_client.provisioncluster import ProvisionCluster
 
 def getScriptDir(file = __file__):

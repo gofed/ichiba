@@ -1,0 +1,3 @@
+[submodule "third_party/cmdsignature"]
+	path = third_party/cmdsignature
+	url = http://github.com/gofed/cmdsignature
