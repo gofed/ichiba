@@ -2,7 +2,7 @@
 
 import os
 import sys
-from programsignatureparser import ProgramSignatureParser
+from cmdsignature.program import ProgramSignatureParser
 from subprocess import call
 
 def getScriptDir(file = __file__):
